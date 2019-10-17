@@ -26,23 +26,19 @@ import Layout from '@/layout'
  */
 
 /**
- * constantRoutes
- * a base page that does not have permission requirements
- * all roles can be accessed
+ * 初始化路由（无需权限）
  */
-export const constantRoutes = [
+export const ConstantRoutes = [
   {
     path: '/login',
     component: () => import('@/views/login/index'),
     hidden: true
   },
-
   {
     path: '/404',
     component: () => import('@/views/404'),
     hidden: true
   },
-
   {
     path: '/',
     component: Layout,
@@ -52,59 +48,29 @@ export const constantRoutes = [
         path: 'dashboard',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/index'),
-        meta: { title: '系统首页', icon: 'dashboard' }
+        meta: {
+          title: '系统首页',
+          icon: 'dashboard'
+        }
       }
     ]
-  },
-  // 404 page must be placed at the end !!!
-  { path: '*', redirect: '/404', hidden: true }
+  }
 ]
 
-const createRouter = () => new Router({
-  // mode: 'history', // require service support
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
+// 定义一个函数来创建router
+export const createRouter = routes => new Router({
+  mode: 'history',
+  routes
 })
 
-const router = createRouter()
+const router = createRouter(ConstantRoutes)
 
-// Detail see: https://github.com/vuejs/vue-router/issues/1234#issuecomment-357941465
+/**
+ * 路由重置，防止router未初始化导致重复挂载
+ */
 export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
 }
-
-/**
- * 需要根据权限挂载的路由列表
- */
-export const DynamicRoutes = [
-  {
-    path: '/system',
-    component: Layout,
-    redirect: '/system/user',
-    name: 'System',
-    meta: { title: '系统管理', icon: 'example' },
-    children: [
-      {
-        path: 'user',
-        name: 'User',
-        component: () => import('@/views/system/user/index'),
-        meta: { title: '用户管理', icon: 'table' }
-      },
-      {
-        path: 'role',
-        name: 'Role',
-        component: () => import('@/views/system/role/index'),
-        meta: { title: '角色管理', icon: 'table' }
-      },
-      {
-        path: 'dict',
-        name: 'Dict',
-        component: () => import('@/views/system/dict/index'),
-        meta: { title: '字典管理', icon: 'table' }
-      }
-    ]
-  },
-]
 
 export default router

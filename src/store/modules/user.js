@@ -9,7 +9,6 @@ const user = {
     name: null,
     roles: null,
     permissions: null,
-    menus: null,
     avatar: null
   },
   // 对state数据的修改
@@ -28,9 +27,6 @@ const user = {
     },
     SET_PERMISSIONS: (state, permissions) => {
       state.permissions = permissions
-    },
-    SET_MENUS: (state, menus) => {
-      state.menus = menus
     }
   },
   // store与后台的交互
@@ -59,7 +55,6 @@ const user = {
           commit('SET_NAME', name)
           commit('SET_ROLES', roles)
           commit('SET_PERMISSIONS', permissions)
-          commit('SET_MENUS', menus),
           resolve(data)
         }).catch(error => {
           reject(error)
@@ -68,14 +63,23 @@ const user = {
     },
     logout({ commit, state }) {
       return new Promise((resolve, reject) => {
-        logout(state.token).then(() => {
+        // logout(state.token).then(() => {
+        //   commit('SET_TOKEN', '')
+        //   removeToken()
+        //   resetRouter()
+        //   resolve()
+        // }).catch(error => {
+        //   reject(error)
+        // })
+        //TODO:用户退出销毁token
+        try {
           commit('SET_TOKEN', '')
           removeToken()
           resetRouter()
           resolve()
-        }).catch(error => {
-          reject(error)
-        })
+        } catch (e) {
+          reject(e)
+        }
       })
     },
     resetToken({ commit }) {

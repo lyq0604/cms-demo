@@ -1,4 +1,5 @@
 import router from './router'
+import DynamicRoutes from './router/dynamicRoutes'
 import store from './store'
 import { Message } from 'element-ui'
 import NProgress from 'nprogress' // progress bar
@@ -11,25 +12,26 @@ NProgress.configure({ showSpinner: false }) // NProgress Configuration
 
 const whiteList = ['/login'] // no redirect whitelist
 
-export function geneMenu(menus, routers) {
-  menus.forEach((item) => {
-    let menu = {
-      path: item.menuPath,
-      component: !item.menuPath ? Layout : () => import(`@/views${item.menuPath}`),
-      hidden: false,
-      children: [],
-      name: item.menuName,
-      meta: {
-        title: item.menuName,
-        icon: item.menuIcon,
-        id: item.id
+
+/**
+ * 根据用户权限生成路由
+ * @param DynamicRoutes 动态路由表
+ * @param permissions 用户权限
+ */
+export function generateMenu(DynamicRoutes, permissions) {
+  const routers = []
+  DynamicRoutes.forEach((route) => {
+    if (route.meta.permission == undefined || route.meta.permission == null || permissions.indexOf(route.meta.permission) > -1) {
+      console.log('添加路由')
+      let child = route.children
+      route.children = []
+      if (child !== undefined && child.length > 0) {
+        route.children = generateMenu(child, permissions)
       }
+      routers.push(route)
     }
-    if (item.children) {
-      geneMenu(item.children, menu.children)
-    }
-    routers.push(menu)
   })
+  return routers;
 }
 
 router.beforeEach(async(to, from, next) => {
@@ -55,13 +57,14 @@ router.beforeEach(async(to, from, next) => {
         try {
           // 获取用户信息
           store.dispatch('getInfo').then((data) => {
-            const routers = []
-            geneMenu(data.menus, routers)
-            // 动态挂载路由
-            // const constRouters = router.options.routes
-            // routers.concat(constRouters)
-            console.log(router.options.routes)
+            const routers = generateMenu(DynamicRoutes, data.permissions)
             router.addRoutes(routers)
+            let constantRouters = router.options.routes
+            constantRouters = constantRouters.concat(routers)
+            constantRouters.push({
+              path: '*', redirect: '/404', hidden: true
+            })
+            router.options.routes = constantRouters
             next()
           })
         } catch (error) {
@@ -81,7 +84,7 @@ router.beforeEach(async(to, from, next) => {
       next()
     } else {
       // other pages that do not have permission to access are redirected to the login page.
-      next(`/login?redirect=${to.path}`)
+      next(`/login`)
       NProgress.done()
     }
   }
