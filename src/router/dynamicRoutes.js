@@ -88,6 +88,28 @@ const DynamicRoutes = [
         }
       }
     ]
+  },
+  {
+    path: '/tool',
+    component: Layout,
+    name: 'Tool',
+    meta: {
+      title: '系统工具',
+      icon: 'example',
+      permission: 'MENU_TOOL'
+    },
+    children: [
+      {
+        path: 'generator',
+        name: 'Generator',
+        component: () => import('@/views/tool/generator/index'),
+        meta: {
+          title: '代码生成',
+          icon: 'table',
+          permission: 'MENU_TOOL_GENERATOR'
+        }
+      }
+    ]
   }
 ]
 
